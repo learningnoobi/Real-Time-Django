@@ -1,0 +1,94 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="{% static '/images/favicon.png' %}" />
+  
+  <title>
+       {% block title %} {% endblock %} / twitter
+     </title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
+
+</head>
+<body>
+
+<div class="container col-lg-6">
+  <form class="alert alert-danger" style="margin-top: 10px;" method="POST" action="">
+      {% csrf_token %}
+    <div class="form-group">
+      <label for="exampleInputEmail1">Add post</label>
+      {{form}}
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+
+    <div id="stream-content" class="stream-content">
+      
+    </div>
+    </div>
+
+   
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+
+
+</body>
+</html>
+  <script type="text/javascript">
+
+  var eventSource  = new EventSource("{% url 'post:stream' %}");
+
+    eventSource.onopen = function() {
+      console.log('Yay! its open?');
+  }
+
+   eventSource.onmessage = function(e) {
+    console.log(e)
+    final_data = JSON.parse(e.data)
+    content = "";
+
+    final_data.forEach(function (item){
+      content += buildPostContent(item['date_created'], item['message'], item['user__username'])
+    })
+      document.getElementById('stream-content').innerHTML = content;
+      console.log(content)
+  }
+eventSource.onerror = function(e) {
+    console.log(`error ${e}`);
+  };
+  function buildPostContent(date_created, message, username) {
+    last_hour = getLastHour(date_created)
+    content = `<div class="alert alert-info col-lg-9 stream-posts"> <div class="stream-posts-img"><i class="fa fa-user" style="font-size:32px"></i></div>
+         <div class="stream-posts-user">
+            <div><strong><a href="#">${username}</a></strong></div>
+      <div>${last_hour}hr</div>
+         </div>
+         <div class="stream-posts-msg">
+         
+          <h4>${message}</h4>
+                </div></div>`;
+  return content
+
+  }
+
+
+  function getLastHour(dt) {
+    let dt1 = new Date(dt);
+    let now = new Date();
+    let hours = Math.abs(now - dt1) / 36e5;
+
+    return Math.round(hours);
+
+  }
+
+</script>
